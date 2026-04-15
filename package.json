@@ -5,9 +5,9 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node --watch-path=./index.js index.js"
+    "start": "node --watch server.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

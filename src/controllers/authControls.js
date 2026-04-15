@@ -1,6 +1,7 @@
 const registration = async (req, res) => {
   const { username, email, password } = req.body;
   try {
+    res.send("Registration Controller");
   } catch (error) {}
 };
 
