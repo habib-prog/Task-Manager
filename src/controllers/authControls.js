@@ -1,6 +1,7 @@
 const user = require("../models/authSchema");
 const { validateEmail } = require("../helpers/credintialValidate");
 const createOtp = require("../helpers/otpUtils");
+const { mailSevices } = require("../helpers/mailSevice");
 const registration = async (req, res) => {
   const { avatar, fullName, username, email, password } = req.body;
   const name = fullName || username;
@@ -38,6 +39,8 @@ const registration = async (req, res) => {
     });
 
     await newUser.save();
+
+    await mailSevices({ email, sub: "Your Verification Code", otp: otpValue });
     res.status(201).json({ message: "User created!" });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
