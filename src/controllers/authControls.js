@@ -1,5 +1,6 @@
 const user = require("../models/authSchema");
 const { validateEmail } = require("../helpers/credintialValidate");
+const createOtp = require("../helpers/otpUtils");
 const registration = async (req, res) => {
   const { avatar, fullName, username, email, password } = req.body;
   const name = fullName || username;
@@ -19,11 +20,21 @@ const registration = async (req, res) => {
       return res.status(400).json({ message: "user already exists" });
     }
 
+    // otp generation
+
+    const otpValue = createOtp();
+
+    //  otp expiry time
+
+    const expireAfter = new Date(Date.now() + 10 * 60 * 1000);
+
     const newUser = new user({
       avatar,
       fullName: name,
       email,
       password,
+      otp: otpValue,
+      otpExpire: expireAfter,
     });
 
     await newUser.save();
