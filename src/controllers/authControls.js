@@ -46,11 +46,38 @@ const registration = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+// otp verify
+const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const existingPerson = await user.findOne({ email });
+    if (!existingPerson)
+      return res.status(404).json({ error: "User not found!" });
 
+    if (existingPerson.isVerified)
+      return res.status(400).json({ message: "OTP Already Verified" });
+
+    const Person = await user.findOneAndUpdate(
+      {
+        email,
+        otp,
+        otpExpire: { $gt: Date.now() },
+      },
+      { isVerified: true, otp: null },
+      { returnDocument: "after" },
+    );
+
+    if (!Person) return res.status(400).json({ message: "Invalid OTP" });
+    res.status(200).json({ message: "Verification successful!" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+// Login
 const login = async (req, res) => {
   const { email, pass } = req.body;
   try {
   } catch (error) {}
 };
 
-module.exports = { registration, login };
+module.exports = { registration, login, verifyOtp };
