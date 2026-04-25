@@ -16,13 +16,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const mailSevices = async ({ email, sub, otp }) => {
+const mailSevices = async ({ email, sub, otp, msg }) => {
   try {
     await transporter.sendMail({
       from: `"Task Manager" <${process.env.UserMail}>`, // sender address
       to: email, // list of recipients
       subject: sub, // subject line
-      html: otpTemplate(otp), // HTML body
+      html: otpTemplate(otp, msg), // HTML body
     });
   } catch (error) {
     console.error("Mail send error:", error.message);

@@ -44,4 +44,15 @@ authSchema.pre("save", async function (next) {
   }
 });
 
+// Password Verification
+
+authSchema.methods.comparePassWord = async function (candidatePassWord) {
+  try {
+    // using a normal function here so this.password points to the current user
+    return await bcrypt.compare(candidatePassWord, this.password);
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = mongoose.model("user", authSchema);

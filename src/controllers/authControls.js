@@ -66,6 +66,12 @@ const verifyOtp = async (req, res) => {
       { isVerified: true, otp: null },
       { returnDocument: "after" },
     );
+    // --- Success OTP Verification Mail ---
+    await mailSevices({
+      email: Person.email,
+      sub: "Registration Successful!",
+      msg: `Hello ${Person.fullName}, your account has been successfully verified. Welcome to Task Manager!`,
+    });
 
     if (!Person) return res.status(400).json({ message: "Invalid OTP" });
     res.status(200).json({ message: "Verification successful!" });
@@ -75,9 +81,24 @@ const verifyOtp = async (req, res) => {
 };
 // Login
 const login = async (req, res) => {
-  const { email, pass } = req.body;
+  const { email, password } = req.body;
   try {
-  } catch (error) {}
+    // get the user first so the checks below work on the actual user data
+    const existingUser = await user.findOne({ email });
+    if (!existingUser)
+      return res.status(404).json({ message: "No User Found!" });
+    if (!existingUser.isVerified)
+      return res.status(400).json({ error: "Email isn't verified" });
+
+    const isPassCorrect = await existingUser.comparePassWord(password);
+
+    if (!isPassCorrect)
+      return res.status(400).json({ Message: "Invalid Credintials" });
+
+    res.status(200).json({ Success: "User Logged In Successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
 };
 
 module.exports = { registration, login, verifyOtp };
