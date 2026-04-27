@@ -121,17 +121,19 @@ const login = async (req, res) => {
 
 const profile = async (req, res) => {
   try {
+    // Existing user by ID (from JWT)
     const existingUser = await user
       .findById(req.user.id)
-      .select("fullName avatar email");
+      .select("fullName avatar _id email");
 
     if (!existingUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json({
-      fullName: existingUser.fullName,
+      id: existingUser._id,
       avatar: existingUser.avatar,
+      fullName: existingUser.fullName,
       email: existingUser.email,
     });
   } catch (error) {
