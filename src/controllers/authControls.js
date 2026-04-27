@@ -2,6 +2,8 @@ const user = require("../models/authSchema");
 const { validateEmail } = require("../helpers/credintialValidate");
 const createOtp = require("../helpers/otpUtils");
 const { mailSevices } = require("../helpers/mailSevice");
+const { generateAccessToken } = require("../helpers/jwt");
+
 const registration = async (req, res) => {
   const { avatar, fullName, username, email, password } = req.body;
   const name = fullName || username;
@@ -95,10 +97,46 @@ const login = async (req, res) => {
     if (!isPassCorrect)
       return res.status(400).json({ Message: "Invalid Credintials" });
 
-    res.status(200).json({ Success: "User Logged In Successfully" });
+    // Access Token Generate
+    const accessToken = generateAccessToken(existingUser);
+    res
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: false, // on production true
+        sameSite: "lax",
+        maxAge: 2 * 24 * 60 * 60 * 1000,
+      })
+      .status(200)
+      .json({
+        Success: "User Logged In Successfully",
+        Token: accessToken,
+        id: existingUser._id,
+        fullName: existingUser.fullName,
+        email: existingUser.email,
+      });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
-module.exports = { registration, login, verifyOtp };
+const profile = async (req, res) => {
+  try {
+    const existingUser = await user
+      .findById(req.user.id)
+      .select("fullName avatar email");
+
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      fullName: existingUser.fullName,
+      avatar: existingUser.avatar,
+      email: existingUser.email,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+module.exports = { registration, login, verifyOtp, profile };
