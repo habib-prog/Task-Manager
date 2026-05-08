@@ -141,4 +141,30 @@ const profile = async (req, res) => {
   }
 };
 
-module.exports = { registration, login, verifyOtp, profile };
+const updateProfile = async (req, res) => {
+  // Request capture from the user
+  const { fullName, avatar } = req.body;
+  try {
+    // Validation
+    if (!fullName && !avatar)
+      return res.status(400).json({ error: "Full Name or Avatar is required" });
+    // Search user & update
+    const UpdateUser = await user
+      .findByIdAndUpdate(
+        req.user.id,
+        {
+          ...(fullName && { fullName }),
+          ...(avatar && { avatar }),
+        },
+        { returnDocument: "after", runValidators: true },
+      )
+      .select("_id fullName email avatar");
+
+    if (!UpdateUser) return res.status(404).json({ error: "User Not found" });
+    res.status(200).json({ Message: "Profile Updated", user: UpdateUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { registration, login, verifyOtp, profile, updateProfile };
